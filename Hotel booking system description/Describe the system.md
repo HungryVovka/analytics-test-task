@@ -22,117 +22,51 @@
 
 ## Диаграмма классов:
 ```
-@startuml
-class User {
-  -id: int
-  -name: str
-  -email: str
-}
-
-class Hotel {
-  -id: int
-  -name: str
-  -country: str
-  -city: str
-  -rooms: List[Room]
-}
-
-class Room {
-  -id: int
-  -number: int
-  -price: float
-}
-
-class Reservation {
-  -id: int
-  -user: User
-  -hotel: Hotel
-  -room: Room
-  -prepaid: bool
-  -payment_confirmation: bool
-}
-
-class System {
-  -users: List[User]
-  -hotels: List[Hotel]
-  +search_hotels(country: str, city: str) : List[Hotel]
-  +get_hotel_info(hotel_id: int) : Hotel
-  +get_room_info(room_id: int) : Room
-  +reserve_room(user_id: int, room_id: int, prepaid: bool) : Reservation
-  +cancel_reservation(reservation_id: int) : bool
-  +pay_commission(reservation_id: int) : bool
-  +get_reservation_confirmation(reservation_id: int) : bool
-  +generate_report() : Report
-}
-
-class HotelAdmin {
-  -hotel: Hotel
-  +add_room(number: int, price: float) : Room
-}
-
-class PaymentService {
-  +process_payment(amount: float) : bool
-}
-
-class Report {
-  -reserved_rooms: int
-  -booking_frequency: float
-}
-User --> Reservation
-User o-- HotelAdmin
-Hotel --> Room
-Reservation --> Room
-Reservation --> User
-Reservation --> Hotel
-HotelAdmin --> Hotel
-System --> User
-System --> Hotel
-System --> Reservation
-System --> Report
-PaymentService --> Reservation
-@enduml
-```
-В виде Python кода:
-```
 class User:
-    def register(self):
-        pass
-    
-    def search_hotels(self, country, city):
-        pass
-    
-    def view_hotel_info(self, hotel_id):
-        pass
-    
-    def make_reservation(self, hotel_id, room_id, prepayment):
-        pass
-    
-    def cancel_prepayment(self, reservation_id):
-        pass
-    
-    def pay_commission(self, reservation_id):
-        pass
-    
-    def get_confirmation_email(self, reservation_id):
-        pass
+    - name: str
+    - email: str
+    - password: str
+    + create_profile()
 
-class HotelAdmin:
-    def generate_reports(self):
-        pass
+class HotelOwner:
+    - name: str
+    - contact_info: str
+    - hotel: Hotel
+    + create_hotel()
 
 class Hotel:
-    def get_info(self):
-        pass
+    - country: str
+    - city: str
+    - description: str
+    - contact_info: str
+    + add_room()
 
 class Room:
-    def get_info(self):
-        pass
+    - room_type: str
+    - description: str
+    - price: float
 
-class PaymentService:
-    def process_payment(self, payment_data):
-        pass
+class Booking:
+    - user: User
+    - hotel: Hotel
+    - room: Room
+    - check_in_date: date
+    - check_out_date: date
+    - prepaid: bool
+    + confirm_booking()
+
+class Payment:
+    - booking: Booking
+    + make_payment()
+
+class Confirmation:
+    - booking: Booking
+    + send_confirmation_email()
+
+class Admin:
+    - hotel: Hotel
+    + generate_reports()
 ```
-
 
 ## Диаграмма последовательностей:
 ```
@@ -165,6 +99,17 @@ Hotel -> System: Подтверждение оплаты
 System -> Reservation: Обновление информации о платеже
 System -> User: Подтверждение оплаты
 @enduml
+```
+Вкратце:
+```
+User -> Hotel: create_profile()
+HotelOwner -> Hotel: create_hotel()
+User -> Hotel: search_hotels()
+User -> Hotel: view_hotel_info()
+User -> Room: book_room()
+Payment -> Booking: make_payment()
+Confirmation -> Booking: send_confirmation_email()
+Admin -> Booking: generate_reports()
 ```
 
 Пример:
@@ -202,7 +147,6 @@ System -> User: Подтверждение оплаты
     |                            |
 ```
 
-
 ## ER-диаграмма:
 ```
 Сущность User {
@@ -238,6 +182,45 @@ Hotel 1--* Room
 Room *--1 Reservation
 ```
 
+Или такой вид:
+```
+User (PK: email)
+- name
+- email
+- password
+
+HotelOwner (PK: email)
+- name
+- email
+- contact_info
+
+Hotel (PK: hotel_id, FK: owner_email)
+- country
+- city
+- description
+- contact_info
+
+Room (PK: room_id, FK: hotel_id)
+- room_type
+- description
+- price
+
+Booking (PK: booking_id, FK: user_email, FK: hotel_id, FK: room_id)
+- check_in_date
+- check_out_date
+- prepaid
+
+Payment (PK: payment_id, FK: booking_id)
+- amount
+
+Confirmation (PK: confirmation_id, FK: booking_id)
+- sent_date
+
+Admin (PK: email, FK: hotel_id)
+
+Note: PK - Primary Key, FK - Foreign Key
+```
+
 В виде схемы:
 ```
 [User]---(1,1)---(1,*)[Reservation]
@@ -245,4 +228,71 @@ Room *--1 Reservation
                   |
                   |
             (1,1) [Hotel]---(1,*)[Room]
+```
+
+## SQL-запрос для создания таблиц в базе данных:
+```
+CREATE TABLE User (
+  email VARCHAR(255) PRIMARY KEY,
+  name VARCHAR(255),
+  password VARCHAR(255)
+);
+
+CREATE TABLE HotelOwner (
+  email VARCHAR(255) PRIMARY KEY,
+  name VARCHAR(255),
+  contact_info VARCHAR(255)
+);
+
+CREATE TABLE Hotel (
+  hotel_id INT PRIMARY KEY AUTO_INCREMENT,
+  owner_email VARCHAR(255),
+  country VARCHAR(255),
+  city VARCHAR(255),
+  description TEXT,
+  contact_info VARCHAR(255),
+  FOREIGN KEY (owner_email) REFERENCES HotelOwner(email)
+);
+
+CREATE TABLE Room (
+  room_id INT PRIMARY KEY AUTO_INCREMENT,
+  hotel_id INT,
+  room_type VARCHAR(255),
+  description TEXT,
+  price DECIMAL(10,2),
+  FOREIGN KEY (hotel_id) REFERENCES Hotel(hotel_id)
+);
+
+CREATE TABLE Booking (
+  booking_id INT PRIMARY KEY AUTO_INCREMENT,
+  user_email VARCHAR(255),
+  hotel_id INT,
+  room_id INT,
+  check_in_date DATE,
+  check_out_date DATE,
+  prepaid TINYINT(1),
+  FOREIGN KEY (user_email) REFERENCES User(email),
+  FOREIGN KEY (hotel_id) REFERENCES Hotel(hotel_id),
+  FOREIGN KEY (room_id) REFERENCES Room(room_id)
+);
+
+CREATE TABLE Payment (
+  payment_id INT PRIMARY KEY AUTO_INCREMENT,
+  booking_id INT,
+  amount DECIMAL(10,2),
+  FOREIGN KEY (booking_id) REFERENCES Booking(booking_id)
+);
+
+CREATE TABLE Confirmation (
+  confirmation_id INT PRIMARY KEY AUTO_INCREMENT,
+  booking_id INT,
+  sent_date DATE,
+  FOREIGN KEY (booking_id) REFERENCES Booking(booking_id)
+);
+
+CREATE TABLE Admin (
+  email VARCHAR(255) PRIMARY KEY,
+  hotel_id INT,
+  FOREIGN KEY (hotel_id) REFERENCES Hotel(hotel_id)
+);
 ```
