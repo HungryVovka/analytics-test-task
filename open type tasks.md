@@ -27,7 +27,9 @@
 
 ### Ответы на задания открытого типа:
 **[Описание системы>>](Hotel%20booking%20system%20description/Describe%20the%20system.md)**
+
 **[Описание API (в REST)>>](Hotel%20booking%20system%20description/Describe%20the%20API%20(in%20REST).md)**
+
 **[Описание командной работы>>](/Hotel%20booking%20system%20description/Describe%20team%20work.md)**
 
 
