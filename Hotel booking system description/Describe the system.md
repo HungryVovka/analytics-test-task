@@ -296,3 +296,53 @@ CREATE TABLE Admin (
   FOREIGN KEY (hotel_id) REFERENCES Hotel(hotel_id)
 );
 ```
+
+## Пример кода на Python, следующего стандарту PEP8:
+```python
+class User:
+    def __init__(self, name, email, password):
+        self.name = name
+        self.email = email
+        self.password = password
+
+class Hotel:
+    def __init__(self, name, country, city):
+        self.name = name
+        self.country = country
+        self.city = city
+
+class Room:
+    def __init__(self, number, price, hotel):
+        self.number = number
+        self.price = price
+        self.hotel = hotel
+
+class Reservation:
+    def __init__(self, user, room, prepayment):
+        self.user = user
+        self.room = room
+        self.prepayment = prepayment
+
+class System:
+    def __init__(self):
+        self.users = []
+        self.hotels = []
+        self.rooms = []
+        self.reservations = []
+
+    def add_user(self, name, email, password):
+        user = User(name, email, password)
+        self.users.append(user)
+
+    def add_hotel(self, name, country, city):
+        hotel = Hotel(name, country, city)
+        self.hotels.append(hotel)
+
+    def add_room(self, number, price, hotel):
+        room = Room(number, price, hotel)
+        self.rooms.append(room)
+
+    def make_reservation(self, user, room, prepayment):
+        reservation = Reservation(user, room, prepayment)
+        self.reservations.append(reservation)
+```
